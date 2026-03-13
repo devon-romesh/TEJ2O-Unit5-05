@@ -5,7 +5,7 @@
  * This program can find the distance utlisiing a sonar. 
 */
 
-//variable
+//variables
 let distanceObject:number = 0 
 
 // start
@@ -18,7 +18,7 @@ input.onButtonPressed(Button.A, function(){
   DigitalPin.P1,
   DigitalPin.P2,
   PingUnit.Centimeters
-)
-  basic.showString((distanceObject) + " cm")
+   )
+  basic.showString(distanceObject + ' cm')
   basic.showIcon(IconNames.Happy)
 })
