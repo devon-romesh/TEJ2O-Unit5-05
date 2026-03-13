@@ -1,7 +1,7 @@
 /* Copyright (c) 2020 MTHS All rights reserved
  *
- * Created by: XXX
- * Created on: Sep 2020
+ * Created by: Devon
+ * Created on: Mar 2026
  * This program can find the distance utlisiing a sonar. 
 */
 
@@ -14,7 +14,7 @@ basic.showIcon(IconNames.Happy)
 //finds the distance with sonar 
 input.onButtonPressed(Button.A, function(){
   basic.clearScreen()
-  distanceObject = sonar.ping (
+  distanceObject = sonar.ping(
   DigitalPin.P1,
   DigitalPin.P2,
   PingUnit.Centimeters
