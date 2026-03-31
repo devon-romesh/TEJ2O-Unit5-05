@@ -18,7 +18,7 @@ myNeopixelStrip.show()
 
 # runs Button A
 while True:
-    if button_a.is_pressed():
+    if button_a.was_pressed():
         lightLevels = display.read_light_level()
         myNeopixelStrip.clear()
 
