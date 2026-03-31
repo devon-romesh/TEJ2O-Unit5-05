@@ -1,47 +1,65 @@
 """
 Created by: Devon
 Created on: Mar 2026
-This module is a Micro:bit MicroPython program that lights up NeoPixels based on how much light there is.
+This module is a Micro:bit MicroPython program that uses a sonar to find the distance of an object
 """
 
 from microbit import *
-import neopixel
 
-# variables
-lightLevels = 0
-myNeopixelStrip = neopixel.NeoPixel(pin16, 4)
 
-# setup
+class HCSR04:
+    # this class abstracts out the functionality of the HC-SR04 and
+    #   returns distance in mm
+    # Trig: pin 1
+    # Echo: pin 2
+    def __init__(self, tpin=pin1, epin=pin2, spin=pin13):
+        self.trigger_pin = tpin
+        self.echo_pin = epin
+        self.sclk_pin = spin
+
+    def distance_mm(self):
+        spi.init(
+            baudrate=125000,
+            sclk=self.sclk_pin,
+            mosi=self.trigger_pin,
+            miso=self.echo_pin,
+        )
+        pre = 0
+        post = 0
+        k = -1
+        length = 500
+        resp = bytearray(length)
+        resp[0] = 0xFF
+        spi.write_readinto(resp, resp)
+        # find first non zero value
+        try:
+            i, value = next((ind, v) for ind, v in enumerate(resp) if v)
+        except StopIteration:
+            i = -1
+        if i > 0:
+            pre = bin(value).count("1")
+            # find first non full high value afterwards
+            try:
+                k, value = next(
+                    (ind, v)
+                    for ind, v in enumerate(resp[i : length - 2])
+                    if resp[i + ind + 1] == 0
+                )
+                post = bin(value).count("1") if k else 0
+                k = k + i
+            except StopIteration:
+                i = -1
+        dist = -1 if i < 0 else round(((pre + (k - i) * 8.0 + post) * 8 * 0.172) / 2)
+        return dist
+
+
+# startup
+sonar = HCSR04()
 display.show(Image.HAPPY)
-myNeopixelStrip.clear()
-myNeopixelStrip.show()
 
-# runs Button A
+# display distance
 while True:
     if button_a.was_pressed():
-        lightLevels = display.read_light_level()
-        myNeopixelStrip.clear()
-
-        # if lightLevels is more than 52 but less than 104
-        if lightLevels > 52:
-            myNeopixelStrip[0] = (255, 255, 255)
-
-        # if lightLevels is more than 104 but less than 156
-        if lightLevels > 104:
-            myNeopixelStrip[1] = (255, 255, 255)
-
-        # if lightLevels is more than 156 but less than 208
-        if lightLevels > 156:
-            myNeopixelStrip[2] = (255, 255, 255)
-
-        # if lightLevels is more than 208
-        if lightLevels > 208:
-            myNeopixelStrip[3] = (255, 255, 255)
-            myNeopixelStrip.show()
-            display.scroll("Light level is " + (lightLevels))
-
-        if button_b.is_pressed():
-            display.clear()
-            myNeopixelStrip.clear()
-            myNeopixelStrip.show()
-            display.show(Image.HAPPY)
+        display.scroll(sonar.distance_mm() / 10)
+        display.scroll(" cm")
+        display.show(Image.HAPPY)
